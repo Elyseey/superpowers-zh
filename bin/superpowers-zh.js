@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, copyFileSync, lstatSync, realpathSync, rmSync } from 'fs';
-import { resolve, dirname, join } from 'path';
+import { resolve, dirname, join, sep } from 'path';
 import { fileURLToPath } from 'url';
-import { homedir } from 'os';
+import { homedir, tmpdir } from 'os';
 
 // 手动递归复制：跨 Node 版本和操作系统行为一致
 // 不使用 cpSync —— 在 Windows + npx 缓存（含 junction）+ Node 16.7-18 下不稳定
@@ -1275,6 +1275,56 @@ function isHomeDir(p) {
   } catch { return resolve(p) === resolve(home); }
 }
 
+// 系统目录护栏（issue #125）。
+//
+// 报告人在**管理员 PowerShell** 里跑 `npx superpowers-zh --tool trae`，而管理员
+// PowerShell 的默认工作目录是 `C:\\Windows\\System32` —— 于是 20 个 skill 目录和
+// bootstrap 全被写进了 Windows 系统目录：
+//     ✅ Trae [项目]: 20 个 skills -> C:\\Windows\\System32\\.trae\\skills
+// 我们本来就有「拒绝装进 home 根目录」的护栏，却没有拦系统目录。对一个默认 cwd 就是
+// System32 的终端来说，这是踩得到的路径，不是极端情况。
+//
+// 匹配规则用「等于该目录或在其之下」，而不是只比对目录本身：System32 的子目录同样
+// 不该装。用户主目录反而要排除 —— macOS 的 /Users/x 在某些配置下会落进这个判断。
+function isSystemDir(p) {
+  let real;
+  try { real = realpathSync(p); } catch { real = resolve(p); }
+  const home = (() => { try { return realpathSync(homedir()); } catch { return homedir(); } })();
+  if (home && (real === home || real.startsWith(home + sep))) return false;   // 主目录另有护栏
+
+  // 临时目录豁免：macOS 的 TMPDIR 落在 /private/var/folders/…，会命中下面的 /var
+  // 规则。CI、测试、以及「先在临时目录试一下」都是正当用途，不能拦。
+  // 这一条是被自己的门禁抓出来的 —— 加完 /var 之后 verify-release A 段 22 款
+  // 工具全部安装失败。
+  try {
+    const tmp = realpathSync(tmpdir());
+    if (real === tmp || real.startsWith(tmp + sep)) return false;
+  } catch {}
+
+  const roots = process.platform === 'win32'
+    ? [process.env.SystemRoot || 'C:\\Windows', process.env.ProgramFiles || 'C:\\Program Files',
+       process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', process.env.ProgramData || 'C:\\ProgramData']
+    : ['/usr', '/etc', '/bin', '/sbin', '/var', '/opt', '/System', '/Library', '/private/etc'];
+
+  // 分隔符统一成 /，大小写在 win32 下统一 —— 否则同一条路径写成 C:\Windows 还是
+  // C:/Windows 就会得出不同结论，而且在非 Windows 上根本没法测这段逻辑。
+  const norm = x => {
+    let v = String(x).replace(/\\/g, '/').replace(/\/+$/, '');
+    return process.platform === 'win32' ? v.toLowerCase() : v;
+  };
+  const r = norm(real);
+  if (r === '' ) return true;                                        // 根目录（/ 归一化后为空串）
+  if (process.platform === 'win32' && /^[a-z]:$/.test(r)) return true; // C: 盘根
+  // 两边都要 realpath：当前目录已经解析过，根目录也必须解析，否则
+  // macOS 上 /var/... 与 /private/var/... 会被判成两个不同的地方（实测踩到）。
+  return roots.some(root => {
+    let rootReal;
+    try { rootReal = realpathSync(root); } catch { rootReal = root; }
+    const rr = norm(rootReal);
+    return rr && (r === rr || r.startsWith(rr + '/'));
+  });
+}
+
 // 卸载支持：完整删除的 bootstrap 文件、需要清理段落的 bootstrap 文件
 const BOOTSTRAP_DELETE = [
   '.github/instructions/superpowers-zh.instructions.md',
@@ -1514,6 +1564,29 @@ function install(forceToolName, force, isGlobal) {
 
   // 项目级安装（默认）：拒绝在 home 根目录乱装（会污染所有项目）。
   // 全局安装（--global）：本就写到 ~/.claude/skills 等用户级目录，是正当行为，跳过该护栏。
+  // 系统目录护栏（#125）：管理员 PowerShell 的默认 cwd 就是 C:\Windows\System32，
+  // 在那里跑一次就会把 20 个 skill 目录写进系统目录。这条**不提供 --force 绕过** ——
+  // 装到系统目录没有任何正当用途，给个开关只会让人照着开关走。
+  if (!isGlobal && isSystemDir(PROJECT_DIR)) {
+    console.error(
+`  ⚠️  当前目录是系统目录: ${PROJECT_DIR}
+
+    superpowers-zh 不会把 skills 装到系统目录 —— 那需要管理员权限、会污染系统，
+    而且你的 AI 编程工具也不会去那里找 skills。
+
+    常见原因：**用管理员权限打开的 PowerShell / cmd，默认工作目录就是
+    C:\\Windows\\System32**，直接在里面跑 npx 就会装到这里（issue #125）。
+
+    正确做法 —— 先切到你的项目目录：
+      cd D:\\path\\to\\your\\project
+      npx superpowers-zh
+
+    或者装到用户级、所有项目共享：
+      npx superpowers-zh --global
+`);
+    process.exit(1);
+  }
+
   if (!isGlobal && !force && isHomeDir(PROJECT_DIR)) {
     console.error(
 `  ⚠️  当前目录是用户主目录: ${PROJECT_DIR}

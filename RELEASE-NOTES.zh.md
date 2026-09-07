@@ -139,6 +139,36 @@ Windows 路径走上一版为 Crush 加的 `dirWin` 机制。**全局安装不�
 「用户全局文件先加载」但没写明那个文件的确切路径，不确认就不写 —— 全局仍装 skills，
 只是不自动触发，想要自动触发用项目级安装。
 
+### 🐛 在管理员 PowerShell 里跑，会把 skills 装进 C:\Windows\System32（[#125](https://github.com/jnMetaCode/superpowers-zh/issues/125)）
+
+issue 正文只有一张截图、模板全空。但那张截图把事情说清楚了：
+
+    PS C:\Windows\system32> npx superpowers-zh --tool trae
+      模式: 项目级
+      目标: C:\Windows\System32
+      ✅ Trae [项目]: 20 个 skills -> C:\Windows\System32\.trae\skills
+      ✅ Trae: bootstrap rule -> C:\Windows\System32\.trae\rules\superpowers-zh.md
+
+**管理员权限打开的 PowerShell，默认工作目录就是 `C:\Windows\System32`。** 用户在那里
+直接跑 npx，我们就老老实实把 20 个 skill 目录写进了 Windows 系统目录。
+
+我们本来就有「拒绝装进用户主目录」的护栏（`--force` 可绕过），却从没拦过系统目录。
+现在补上，且**不提供 --force 绕过** —— 装到系统目录没有任何正当用途，给个开关只会
+让人照着开关走。
+
+    ⚠️  当前目录是系统目录: C:\Windows\System32
+      常见原因：**用管理员权限打开的 PowerShell / cmd，默认工作目录就是
+      C:\Windows\System32**，直接在里面跑 npx 就会装到这里（issue #125）。
+      正确做法 —— 先切到你的项目目录： cd D:\path\to\your\project
+
+覆盖 Windows（`%SystemRoot%`、`%ProgramFiles%`、`%ProgramData%`、盘符根）与
+Unix（`/`、`/usr`、`/etc`、`/bin`、`/sbin`、`/var`、`/opt`、`/System`、`/Library`）。
+主目录与系统临时目录豁免（各有自己的处理）。
+
+> 关于截图里那个「检测到当前版本文件损坏」弹窗：那是 TRAE 自己的完整性检查提示，
+> **我们没有证据表明它是本次安装导致的**，所以不宣称因果。能确认并已修的是：
+> 我们不该往系统目录写东西。
+
 ### 🛡️ 这一版新增 / 修好的门禁
 
 每条都做过反向验证（把问题造回去，必须报错）：
@@ -150,9 +180,10 @@ Windows 路径走上一版为 Crush 加的 `dirWin` 机制。**全局安装不�
 | 11 款全局工具卸载零残留 + **不误删用户自有文件** | 此前只测了 1 款；「误删」一款都没测过 |
 | 上游同步基线 `.upstream-sync.json` + 正文级漂移计量 | 上游改了 415 行正文，旧门禁一个字都没说 |
 | 全局-only 工具的项目级必须明确拒绝（rc≠0 + 零写入） | 猜一个项目级路径装进去 = 第四次「装了不生效」 |
+| 系统目录护栏（Unix + win32 打桩双向验证） | 管理员终端默认 cwd 就是 System32（#125） |
 | audit 3c-bis 的静默分支改为显式 warn | 上游一发新版，检查条数就悄悄少一条 |
 
-`verify-release` 115 → **156 pass**。
+`verify-release` 115 → **160 pass**。
 
 ### 🌐 官网（不影响安装包）
 

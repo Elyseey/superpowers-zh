@@ -454,6 +454,7 @@ MIT License — 自由使用，商業或個人均可。
 > - 🐛 **Crush 在 Windows 上裝錯目錄** —— 官方是 `%LOCALAPPDATA%\crush\skills`，我們兩個平台都裝 `~/.config`。文件早寫對了，程式碼沒跟上
 > - 🐛 **render-graphs.js** —— 取上游的安全加固與 Windows 修復，但**不跟它改 ESM**（那會在 Node 20 的普通專案裡直接載入失敗）
 > - 🆕 **新增 DeepSeek Harness 支援**（[#122](https://github.com/jnMetaCode/superpowers-zh/issues/122)）—— 專案級 `.dsh/skills/` + 全域 `~/.dsh/skills/`，引導寫 `AGENTS.md`；四條路徑全部有官方出處
+> - 🐛 **在管理員 PowerShell 裡跑會把 skills 裝進 `C:\Windows\System32`**（[#125](https://github.com/jnMetaCode/superpowers-zh/issues/125)）—— 管理員終端的預設工作目錄就是那裡。補系統目錄護欄，且不提供 `--force` 繞過
 > - 🆕 **新增 Reasonix 支援**（[#42](https://github.com/jnMetaCode/superpowers-zh/issues/42)）—— 專案級 `.reasonix/skills/` + `REASONIX.md`；**Windows 全域是 `%APPDATA%\reasonix\skills`**，與 Unix 不同構
 > - 🆕 **新增 ZCode（智譜）支援**（工具數 23 → 26）—— 只做全域安裝：官方文件只公開了 `~/.zcode/skills/`，專案級是應用內 UI 匯入、不暴露磁碟路徑，所以專案級會被明確拒絕而不是猜路徑裝進去
 > - 🛡️ **6 條新門禁**（前綴回歸、Windows 路徑、解除安裝不誤刪使用者檔案、全域-only 工具專案級必拒、上游漂移計量…），`verify-release` 115 → 144

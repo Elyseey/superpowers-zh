@@ -369,6 +369,38 @@ done < "$WINSTUB.out"
 rm -rf "$(dirname "$WINSTUB")"
 
 echo ""
+echo "─── K. 系统目录护栏（#125）───"
+# 报告人在管理员 PowerShell 里跑 npx —— 那个终端的默认 cwd 就是 C:\Windows\System32，
+# 于是 20 个 skill 目录被写进了 Windows 系统目录。Unix 侧同理（/etc、/usr…）。
+# 断言：拒绝 + 退出码非 0 + 目标目录零写入。
+for d in /etc /usr/local; do
+  [ -d "$d" ] || continue
+  before=$(find "$d" -maxdepth 1 -name ".claude" 2>/dev/null | wc -l | tr -d ' ')
+  out=$(cd "$d" && node "$INS" --tool claude 2>&1); rc=$?
+  after=$(find "$d" -maxdepth 1 -name ".claude" 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$rc" != "0" ] && echo "$out" | grep -q "当前目录是系统目录" && [ "$before" = "$after" ]; then ok; else
+    bad "系统目录护栏失效: 在 ${d} 下 rc=${rc}（应非 0），.claude 数 ${before} -> ${after}"
+  fi
+done
+# Windows 场景：platform 打桩 + 伪造 SystemRoot，跑真实 installer
+SYSSTUB=$(mktemp -d)
+cat > "$SYSSTUB/as-win-sys.mjs" <<'STUB'
+Object.defineProperty(process, 'platform', { value: 'win32' });
+process.env.SystemRoot = process.env.FAKE_SYSROOT;
+await import(process.env.INS_PATH);
+STUB
+mkdir -p "$SYSSTUB/Windows/System32" "$SYSSTUB/proj/.trae" "$SYSSTUB/home"
+out=$(cd "$SYSSTUB/Windows/System32" && INS_PATH="$INS" FAKE_SYSROOT="$SYSSTUB/Windows" HOME="$SYSSTUB/home"       node "$SYSSTUB/as-win-sys.mjs" --tool trae 2>&1); rc=$?
+wrote=$(find "$SYSSTUB/Windows/System32" -type f 2>/dev/null | wc -l | tr -d ' ')
+if [ "$rc" != "0" ] && echo "$out" | grep -q "当前目录是系统目录" && [ "$wrote" = "0" ]; then ok; else
+  bad "win32 下 System32 未被拦: rc=${rc}、写入 ${wrote} 个文件"
+fi
+# 反面：同样打桩下，普通项目目录必须照常安装（护栏不能误伤）
+n=$(cd "$SYSSTUB/proj" && INS_PATH="$INS" FAKE_SYSROOT="$SYSSTUB/Windows" HOME="$SYSSTUB/home"     node "$SYSSTUB/as-win-sys.mjs" 2>&1 | grep -c "✅")
+[ "$n" -ge 1 ] && ok || bad "系统目录护栏误伤了普通项目目录（win32 打桩下 0 条成功输出）"
+rm -rf "$SYSSTUB"
+
+echo ""
 echo "─── J. 全局-only 工具：项目级必须明确拒绝（不能猜个路径装进去）───"
 # ZCode 的项目级磁盘路径官方从未公开（导入是应用内 UI 动作）。猜一个装进去就是
 # 「装了不生效」—— 本仓在 Codex / Windsurf / VS Code 上已经栽过三次。
