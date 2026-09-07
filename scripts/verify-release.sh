@@ -369,6 +369,22 @@ done < "$WINSTUB.out"
 rm -rf "$(dirname "$WINSTUB")"
 
 echo ""
+echo "─── L. Hermes 项目级引导必须写 AGENTS.md（不是 HERMES.md）───"
+# Hermes 官方文档（use-soul-with-hermes）：「project workflow instructions …
+# Those belong in AGENTS.md」，且 HERMES.md 在其整份文档里出现 0 次。
+# v1.7.12 及更早写的是 HERMES.md —— 这是 Hermes 的第二次「装了不生效」（#45 是第一次）。
+T=$(mktemp -d); mkdir -p "$T/.hermes"
+(cd "$T" && node "$INS" >/dev/null 2>&1)
+if [ -f "$T/AGENTS.md" ] && grep -q "superpowers-zh" "$T/AGENTS.md"; then ok; else
+  bad "Hermes 项目级引导应写入 AGENTS.md 并含 superpowers-zh 段落"
+fi
+if [ ! -f "$T/HERMES.md" ]; then ok; else bad "Hermes 不应再写 HERMES.md（官方文档里查无此文件）"; fi
+(cd "$T" && node "$INS" --uninstall >/dev/null 2>&1)
+left=$(find "$T" -type f 2>/dev/null | wc -l | tr -d ' ')
+[ "$left" = "0" ] && ok || bad "Hermes 卸载后残留 ${left} 个文件"
+rm -rf "$T"
+
+echo ""
 echo "─── K. 系统目录护栏（#125）───"
 # 报告人在管理员 PowerShell 里跑 npx —— 那个终端的默认 cwd 就是 C:\Windows\System32，
 # 于是 20 个 skill 目录被写进了 Windows 系统目录。Unix 侧同理（/etc、/usr…）。

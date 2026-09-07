@@ -766,13 +766,13 @@ ${skillList}
 }
 
 function generateHermesBootstrap(projectDir, isGlobal) {
-  // 全局模式不写 bootstrap：Hermes 的用户级指令文件约定未在 docs 证实，
-  // 往 $HOME 根目录写 HERMES.md 是猜路径 + 污染主目录。~/.hermes/skills/ 里的
+  // 全局模式不写 bootstrap：Hermes 的全局文件是 $HERMES_HOME/SOUL.md（身份/人格），
+  // 其全局身份文件 SOUL.md 官方明确「不放项目/任务指令」。~/.hermes/skills/ 里的
   // skill 靠 name/description 被 skills_list / skill_view 发现，本就不依赖 bootstrap。
   if (isGlobal) {
     console.log('  ℹ️  Hermes 全局安装不写 bootstrap 文件（其用户级指令文件约定未证实）。');
     console.log('     skills 已在 ~/.hermes/skills/，可用 skills_list / skill_view 发现。');
-    console.log('     想让它在项目里自动触发，在该项目跑一次项目级安装以生成 HERMES.md。');
+    console.log('     想让它在项目里自动触发，在该项目跑一次项目级安装以生成 AGENTS.md。');
     return;
   }
 
@@ -815,15 +815,23 @@ ${skillList}
 当任务匹配某个 skill 时，使用 \`skill_view\` 加载对应 skill 并严格遵循其流程。
 `;
 
-  // 写入 HERMES.md（如果已存在则追加）
-  const hermesPath = resolve(projectDir, 'HERMES.md');
+  // 写入项目根的 AGENTS.md。
+  //
+  // v1.7.12 及更早写的是 HERMES.md —— 而 **Hermes 官方文档里 `HERMES.md` 出现 0 次**。
+  // 其 use-soul-with-hermes 文档写得很明确：
+  //     "project workflow instructions … Those belong in `AGENTS.md`."
+  //     "if it only belongs to one project, put it in `AGENTS.md`"
+  // 全局身份文件是 `$HERMES_HOME/SOUL.md`，但同一份文档明确说 SOUL.md **不是**
+  // 放任务/项目指令的地方，所以全局仍然只装 skills、不写 bootstrap。
+  // 这是 Hermes 的第二次「装了不生效」（#45 是第一次，那次错的是 skills 目录）。
+  const hermesPath = resolve(projectDir, 'AGENTS.md');
   if (existsSync(hermesPath)) {
     const existing = readFileSync(hermesPath, 'utf8');
     if (!existing.includes('superpowers-zh')) {
       writeFileSync(hermesPath, existing.replace(/\s+$/, '') + '\n\n' + wrapWithSentinel(content), 'utf8');
       console.log(`  ✅ Hermes Agent: 追加 skills 引用 -> ${hermesPath}`);
     } else {
-      console.log(`  ✅ Hermes Agent: HERMES.md 已包含 superpowers-zh 引用`);
+      console.log(`  ✅ Hermes Agent: AGENTS.md 已包含 superpowers-zh 引用`);
     }
   } else {
     writeFileSync(hermesPath, wrapWithSentinel(content), 'utf8');
