@@ -8,7 +8,8 @@
 
 ## v1.7.12 (2026-09-07)
 
-**通过 Claude Code 插件市场安装的用户请更新。** 本版修的是一个「装了，但技能之间互相调不动」的问题。
+**通过 Claude Code 插件市场安装的用户请更新。** 本版修的是一个「装了，但技能之间互相调不动」的问题，
+并新增第 24 款工具支持：**ZCode（智谱）**。
 
 ### 🐛 插件模式下跨技能调用全部失败（[#116 之外最实的一条：#124](https://github.com/jnMetaCode/superpowers-zh/issues/124)）
 
@@ -63,6 +64,39 @@ Windows 走 `%LOCALAPPDATA%\crush\skills\`（它给 Windows 用户的上手命�
 实测（`--no-experimental-detect-command` 模拟 Node 20）：上游版报
 `To load an ES module, set "type": "module"` + SyntaxError，我们改后版本正常执行。
 
+### 🆕 新增 ZCode（智谱）支持 —— 只做全局，因为项目级路径官方从未公开（[#95](https://github.com/jnMetaCode/superpowers-zh/issues/95) [#120](https://github.com/jnMetaCode/superpowers-zh/issues/120)）
+
+```bash
+npx superpowers-zh --global --tool zcode     # -> ~/.zcode/skills/
+```
+
+[#120](https://github.com/jnMetaCode/superpowers-zh/issues/120) 附了一份完整补丁，写着装到
+`.zcode/skills` + 写 `.zcode/AGENTS.md`。**没有采纳** —— 提交者自己写明那是「让 AI 按
+zcode 的目录结构适配」生成的，而官方文档里查无此路径。
+
+[ZCode 官方技能文档](https://zcode.z.ai/docs/skill)（中英文版一致）只给出一个磁盘路径：
+
+    ZCode Agent 的用户级技能目录：~/.zcode/skills/<skill-name>/SKILL.md
+
+项目级在文档里是**应用内的 UI 导入动作**（设置 → 技能 → 导入，可选「链接到来源目录」或
+「复制成 ZCode 内部副本」，导入目标可选「全局」或「当前项目」），**从不暴露项目级磁盘
+路径**。`.zcode/AGENTS.md` 同样查无实据 —— AGENTS.md 在 ZCode 里确实是六类扩展之一，
+但位置与作用域文档页没写明。
+
+所以项目级安装被**明确拒绝**（退出码 1、项目里零写入），并指向 `--global`：
+
+    ❌ ZCode 不支持项目级安装。
+      其官方文档只给出用户级技能目录，项目级导入是应用内的 UI 动作、不暴露磁盘路径。
+      猜一个路径装进去只会「装了不生效」，所以这里直接拒绝。
+
+猜路径的代价这仓已经付过三次（Codex 项目级、Windsurf 全局、VS Code），这次不付第四次。
+
+技能装好后在 ZCode 里用 `$skill-name` 调用（设置 → 技能 里可查看与启停）。因为不写
+bootstrap，**不会自动触发**，需要显式调用 —— 这个限制写在 `docs/README.zcode.md` 里。
+若你查到 ZCode 的项目级路径或 AGENTS.md 的确切位置，欢迎开 issue，我们会补上。
+
+工具数 23 → **24**，支持全局安装的工具 11 → **12**。
+
 ### 🛡️ 这一版新增 / 修好的门禁
 
 每条都做过反向验证（把问题造回去，必须报错）：
@@ -73,9 +107,10 @@ Windows 走 `%LOCALAPPDATA%\crush\skills\`（它给 Windows 用户的上手命�
 | Windows 专属全局路径（platform 打桩跑真实代码） | 「只在某个平台不生效」的 bug，在 macOS 上跑一万次也测不出 |
 | 11 款全局工具卸载零残留 + **不误删用户自有文件** | 此前只测了 1 款；「误删」一款都没测过 |
 | 上游同步基线 `.upstream-sync.json` + 正文级漂移计量 | 上游改了 415 行正文，旧门禁一个字都没说 |
+| 全局-only 工具的项目级必须明确拒绝（rc≠0 + 零写入） | 猜一个项目级路径装进去 = 第四次「装了不生效」 |
 | audit 3c-bis 的静默分支改为显式 warn | 上游一发新版，检查条数就悄悄少一条 |
 
-`verify-release` 115 → **140 pass**。
+`verify-release` 115 → **144 pass**。
 
 ### 🌐 官网（不影响安装包）
 

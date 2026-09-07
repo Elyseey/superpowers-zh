@@ -21,7 +21,8 @@ Chinese community edition of [superpowers](https://github.com/obra/superpowers) 
 > - 🐛 **插件模式下跨技能调用全部失败**（[#124](https://github.com/jnMetaCode/superpowers-zh/issues/124)）—— 正文照抄了上游的 `superpowers:` 前缀，而本插件叫 `superpowers-zh`，于是 `Skill("superpowers:systematic-debugging")` 返回 Unknown skill。32 处已改为**裸技能名**（两种分发模式都能解析）
 > - 🐛 **Crush 在 Windows 上装错目录** —— 官方是 `%LOCALAPPDATA%\crush\skills`，我们两个平台都装 `~/.config`。文档早写对了，代码没跟上
 > - 🐛 **render-graphs.js** —— 取上游的安全加固与 Windows 修复，但**不跟它改 ESM**（那会在 Node 20 的普通项目里直接加载失败）
-> - 🛡️ **5 条新门禁**（前缀回归、Windows 路径、卸载不误删用户文件、上游漂移计量…），`verify-release` 115 → 140
+> - 🆕 **新增 ZCode（智谱）支持**（工具数 23 → 24）—— 只做全局安装：官方文档只公开了 `~/.zcode/skills/`，项目级是应用内 UI 导入、不暴露磁盘路径，所以项目级会被明确拒绝而不是猜路径装进去
+> - 🛡️ **6 条新门禁**（前缀回归、Windows 路径、卸载不误删用户文件、全局-only 工具项目级必拒、上游漂移计量…），`verify-release` 115 → 144
 >
 > 📋 官网侧改动（版本提示条、22 份工具文档入口、结构化数据、分享大图、可访问性、sitemap…）见 **[完整 Release Notes →](RELEASE-NOTES.zh.md)**
 
