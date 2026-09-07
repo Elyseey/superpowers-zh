@@ -57,6 +57,21 @@ Chinese community edition of [superpowers](https://github.com/obra/superpowers) 
 <table>
 <tr>
 <td width="25%">
+  <a href="https://go.apimart.ai/gh-superpowers-zh">
+    <img src="assets/sponsors/apimart.jpg" alt="APIMart —— 專注 AI 圖片/影片生成的低價 API 平台，GPT-Image-2 低至 $0.006/張，1 美元可出圖 160+ 張" width="100%">
+  </a>
+</td>
+<td width="75%" valign="middle">
+
+感謝 [APIMart](https://go.apimart.ai/gh-superpowers-zh) 贊助了本專案！APIMart 是專注 AI 圖片/影片生成的低價 API 平台，**GPT-Image-2 低至 $0.006/張**，1 美元可出圖 160+ 張。圖片、影片一套非同步 API 通吃，提交任務拿 ID、回呼取結果，跑批萬張不逾時、換模型不改程式碼。按量付費、無月費，🎁 **透過[此連結](https://go.apimart.ai/gh-superpowers-zh)註冊即可開用！**
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="25%">
   <a href="https://passport.compshare.cn/register?referral_code=ETD3L5JBM13CtKARkMORot&ytag=GPU_YY_YX_git_superpowers-zh">
     <img src="assets/sponsors/compshare.jpg" alt="優雲智算 by UCloud — 熱門國產模型按次調用套餐包，低至 49 元/月起" width="100%">
   </a>
