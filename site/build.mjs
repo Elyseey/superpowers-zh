@@ -245,33 +245,6 @@ const SPONSORS = [
   },
   {
     tier: 'standard',
-    img: 'apimart.jpg', w: 2172, h: 724, code: '',
-    logo: 'logo-apimart-icon.png',
-    url: 'https://go.apimart.ai/gh-superpowers-zh',
-    name: { zh: 'APIMart', en: 'APIMart', zht: 'APIMart' },
-    alt: {
-      zh: 'APIMart —— 专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张',
-      en: 'APIMart — low-cost API platform for AI image & video generation, GPT-Image-2 from $0.006 per image, 160+ images per dollar',
-      zht: 'APIMart —— 專注 AI 圖片/影片生成的低價 API 平台，GPT-Image-2 低至 $0.006/張，1 美元可出圖 160+ 張',
-    },
-    desc: {
-      zh: '专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张。图片、视频一套异步 API 通吃，提交任务拿 ID、回调取结果，跑批万张不超时、换模型不改代码。按量付费、无月费。',
-      en: 'A low-cost API platform for AI image & video generation — GPT-Image-2 from $0.006/image, 160+ images per dollar. One async API covers both image and video: submit a task, get an ID, fetch results via polling or callback. Batch tens of thousands of images without timeouts, switch models without changing code. Pay-as-you-go with no monthly fee.',
-      zht: '專注 AI 圖片/影片生成的低價 API 平台，GPT-Image-2 低至 $0.006/張，1 美元可出圖 160+ 張。圖片、影片一套非同步 API 通吃，提交任務拿 ID、回呼取結果，跑批萬張不逾時、換模型不改程式碼。按量付費、無月費。',
-    },
-    perk: {
-      zh: '🎁 通过本页链接注册即可开用：按量付费、无月费，GPT-Image-2 低至 $0.006/张',
-      en: '🎁 Sign up via this link to start: pay-as-you-go, no monthly fee, GPT-Image-2 from $0.006/image',
-      zht: '🎁 透過本頁連結註冊即可開用：按量付費、無月費，GPT-Image-2 低至 $0.006/張',
-    },
-    perkShort: {
-      zh: '按量付费无月费，GPT-Image-2 低至 $0.006/张',
-      en: 'Pay-as-you-go, no monthly fee, from $0.006/image',
-      zht: '按量付費無月費，GPT-Image-2 低至 $0.006/張',
-    },
-  },
-  {
-    tier: 'standard',
     img: 'compshare.jpg', w: 800, h: 368, code: '',
     logo: 'logo-compshare-icon.png',
     url: 'https://passport.compshare.cn/register?referral_code=ETD3L5JBM13CtKARkMORot&ytag=GPU_YY_YX_git_superpowers-zh',
@@ -325,6 +298,33 @@ const SPONSORS = [
       zht: '🎁 本專案使用者專屬優惠碼 AGENCY，透過本頁連結註冊首次購買 9 折',
     },
     perkShort: { zh: '首次购买 9 折优惠', en: '10% off your first purchase', zht: '首次購買 9 折優惠' },
+  },
+  {
+    tier: 'standard',
+    img: 'apimart.jpg', w: 2172, h: 724, code: '',
+    logo: 'logo-apimart-icon.png',
+    url: 'https://go.apimart.ai/gh-superpowers-zh',
+    name: { zh: 'APIMart', en: 'APIMart', zht: 'APIMart' },
+    alt: {
+      zh: 'APIMart —— 专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张',
+      en: 'APIMart — low-cost API platform for AI image & video generation, GPT-Image-2 from $0.006 per image, 160+ images per dollar',
+      zht: 'APIMart —— 專注 AI 圖片/影片生成的低價 API 平台，GPT-Image-2 低至 $0.006/張，1 美元可出圖 160+ 張',
+    },
+    desc: {
+      zh: '专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张。图片、视频一套异步 API 通吃，提交任务拿 ID、回调取结果，跑批万张不超时、换模型不改代码。按量付费、无月费。',
+      en: 'A low-cost API platform for AI image & video generation — GPT-Image-2 from $0.006/image, 160+ images per dollar. One async API covers both image and video: submit a task, get an ID, fetch results via polling or callback. Batch tens of thousands of images without timeouts, switch models without changing code. Pay-as-you-go with no monthly fee.',
+      zht: '專注 AI 圖片/影片生成的低價 API 平台，GPT-Image-2 低至 $0.006/張，1 美元可出圖 160+ 張。圖片、影片一套非同步 API 通吃，提交任務拿 ID、回呼取結果，跑批萬張不逾時、換模型不改程式碼。按量付費、無月費。',
+    },
+    perk: {
+      zh: '🎁 通过本页链接注册即可开用：按量付费、无月费，GPT-Image-2 低至 $0.006/张',
+      en: '🎁 Sign up via this link to start: pay-as-you-go, no monthly fee, GPT-Image-2 from $0.006/image',
+      zht: '🎁 透過本頁連結註冊即可開用：按量付費、無月費，GPT-Image-2 低至 $0.006/張',
+    },
+    perkShort: {
+      zh: '按量付费无月费，GPT-Image-2 低至 $0.006/张',
+      en: 'Pay-as-you-go, no monthly fee, from $0.006/image',
+      zht: '按量付費無月費，GPT-Image-2 低至 $0.006/張',
+    },
   },
 ];
 

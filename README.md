@@ -57,21 +57,6 @@ Chinese community edition of [superpowers](https://github.com/obra/superpowers) 
 <table>
 <tr>
 <td width="25%">
-  <a href="https://go.apimart.ai/gh-superpowers-zh">
-    <img src="assets/sponsors/apimart.jpg" alt="APIMart —— 专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张" width="100%">
-  </a>
-</td>
-<td width="75%" valign="middle">
-
-感谢 [APIMart](https://go.apimart.ai/gh-superpowers-zh) 赞助了本项目！APIMart 是专注 AI 图片/视频生成的低价 API 平台，**GPT-Image-2 低至 $0.006/张**，1 美元可出图 160+ 张。图片、视频一套异步 API 通吃，提交任务拿 ID、回调取结果，跑批万张不超时、换模型不改代码。按量付费、无月费，🎁 **通过[此链接](https://go.apimart.ai/gh-superpowers-zh)注册即可开用！**
-
-</td>
-</tr>
-</table>
-
-<table>
-<tr>
-<td width="25%">
   <a href="https://passport.compshare.cn/register?referral_code=ETD3L5JBM13CtKARkMORot&ytag=GPU_YY_YX_git_superpowers-zh">
     <img src="assets/sponsors/compshare.jpg" alt="优云智算 by UCloud — 热门国产模型按次调用套餐包，低至 49 元/月起" width="100%">
   </a>
@@ -83,7 +68,6 @@ Chinese community edition of [superpowers](https://github.com/obra/superpowers) 
 </td>
 </tr>
 </table>
-
 <table>
 <tr>
 <td width="25%">
@@ -94,6 +78,20 @@ Chinese community edition of [superpowers](https://github.com/obra/superpowers) 
 <td width="75%" valign="middle">
 
 感谢 [Cubence](https://cubence.com/signup?code=SCW29JP9) 对本项目的支持。Cubence 是一家致力为客户提供稳定、高效的 API 中转服务商。从 25 年 9 月运营至今，提供了 Claude Code、Codex、Gemini 等多种模型支持。🎁 **Cubence 为本开源项目的用户提供了特别的专属优惠码 `AGENCY`，通过[此链接](https://cubence.com/signup?code=SCW29JP9)注册的用户，首次购买即可享受 9 折优惠！**
+
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<td width="25%">
+  <a href="https://go.apimart.ai/gh-superpowers-zh">
+    <img src="assets/sponsors/apimart.jpg" alt="APIMart —— 专注 AI 图片/视频生成的低价 API 平台，GPT-Image-2 低至 $0.006/张，1 美元可出图 160+ 张" width="100%">
+  </a>
+</td>
+<td width="75%" valign="middle">
+
+感谢 [APIMart](https://go.apimart.ai/gh-superpowers-zh) 赞助了本项目！APIMart 是专注 AI 图片/视频生成的低价 API 平台，**GPT-Image-2 低至 $0.006/张**，1 美元可出图 160+ 张。图片、视频一套异步 API 通吃，提交任务拿 ID、回调取结果，跑批万张不超时、换模型不改代码。按量付费、无月费，🎁 **通过[此链接](https://go.apimart.ai/gh-superpowers-zh)注册即可开用！**
 
 </td>
 </tr>
