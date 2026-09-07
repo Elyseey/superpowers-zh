@@ -116,7 +116,7 @@ done
 
 echo ""
 echo "─── C. --global：11 款应成功（落盘位置 / 卸载零残留 / 不误删用户文件），其余应明确拒绝 ───"
-declare -a GLOBAL_OK=(claude codex openclaw windsurf opencode qwen qoder crush hermes codebuddy codearts)
+declare -a GLOBAL_OK=(claude codex openclaw windsurf opencode qwen qoder crush hermes codebuddy codearts zcode)
 declare -a GLOBAL_NO=(cursor kiro trae aider deerflow vscode claw gemini antigravity cline kilocode)
 # 全局落盘位置断言。原来这里只看退出码 —— 而 Windsurf 的 --global 曾装到
 # ~/.windsurf/skills，官方实际读 ~/.codeium/windsurf/skills，退出码照样是 0。
@@ -127,6 +127,7 @@ declare -a GLOBAL_DIR=(
   "qwen:.qwen/skills"            "qoder:.qoder/skills"         "crush:.config/crush/skills"
   "hermes:.hermes/skills"        "codebuddy:.codebuddy/skills"
   "codearts:.codeartsdoer/skills"
+  "zcode:.zcode/skills"
 )
 # 卸载有两个反方向的坑，两个都得测，而且此前**只测了 qwen 一款**：
 #   ① 卸不干净 —— 残留留在用户主目录里，看不见、跨项目污染
@@ -348,16 +349,38 @@ if [ "$left" = "0" ]; then ok; else bad "win32 下 crush 全局卸载残留 ${le
 rm -rf "$H" "$(dirname "$WINSTUB")"
 
 echo ""
+echo "─── J. 全局-only 工具：项目级必须明确拒绝（不能猜个路径装进去）───"
+# ZCode 的项目级磁盘路径官方从未公开（导入是应用内 UI 动作）。猜一个装进去就是
+# 「装了不生效」—— 本仓在 Codex / Windsurf / VS Code 上已经栽过三次。
+# 断言三件事：退出码非 0、提示里说明原因、项目目录里零写入。
+for tool in $(sed -n '/^const TARGETS = \[/,/^\];/p' "$INS" \
+              | grep -E "^  \{ name: '[^']+', +dir: null" \
+              | sed -nE "s/^  \{ name: '([^']+)'.*/\1/p" | tr 'A-Z' 'a-z'); do
+  T=$(mktemp -d); pushd "$T" >/dev/null
+  out=$(node "$INS" --tool "$tool" 2>&1); rc=$?
+  wrote=$(find . -type f | wc -l | tr -d ' ')
+  popd >/dev/null
+  if [ "$rc" != "0" ] && echo "$out" | grep -q "不支持项目级安装" && [ "$wrote" = "0" ]; then ok; else
+    bad "${tool}: 全局-only 工具的项目级安装应明确拒绝（rc!=0、零写入），实际 rc=${rc}、写入 ${wrote} 个文件"
+  fi
+  rm -rf "$T"
+done
+
+echo ""
 echo "─── G. 自检：本脚本的覆盖清单不得落后于 installer ───"
 # 与 audit.sh Category 5 同一口径：TARGETS 条目数 + 1（Copilot CLI 与 CC 共用目标）
 targets=$(sed -n '/^const TARGETS = \[/,/^\];/p' "$INS" | grep -cE "^  \{ name: '")
 expected=$((targets + 1))
-if [ "${#SPEC[@]}" = "$expected" ]; then ok; else
-  bad "A 段只覆盖 ${#SPEC[@]} 款工具，installer 支持 ${expected} 款 —— 新工具没进 SPEC 会被静默漏测"
+# 全局-only 工具（installer 里 dir: null）不进 A 段的项目级 SPEC —— 它们的项目级安装
+# 本来就该被拒绝。数量从 installer 现场推导，不手写清单，避免两边漂移。
+global_only=$(sed -n '/^const TARGETS = \[/,/^\];/p' "$INS" | grep -cE "^  \{ name: '[^']+', +dir: null")
+if [ "$(( ${#SPEC[@]} + global_only ))" = "$expected" ]; then ok; else
+  bad "A 段覆盖 ${#SPEC[@]} 款 + 全局-only ${global_only} 款 != installer 的 ${expected} 款 —— 新工具没进 SPEC 会被静默漏测"
 fi
 # 比对工具名集合，而不是数条数 —— 一个工具可以有多个检测标记
 detect_tools=$(printf '%s\n' "${DETECT[@]}" | sed 's/^[^:]*://' | sort -u)
-target_tools=$(sed -n '/^const TARGETS = \[/,/^\];/p' "$INS" | sed -nE "s/^  \{ name: '([^']+)'.*/\1/p" | sort -u)
+# 全局-only 工具没有项目级检测标记（detect: []），不该要求 B 段覆盖
+target_tools=$(sed -n '/^const TARGETS = \[/,/^\];/p' "$INS" | grep -vE "^  \{ name: '[^']+', +dir: null" | sed -nE "s/^  \{ name: '([^']+)'.*/\1/p" | sort -u)
 uncovered=$(comm -13 <(printf '%s\n' "$detect_tools") <(printf '%s\n' "$target_tools"))
 if [ -z "$uncovered" ]; then ok; else
   bad "B 段未验证这些工具的检测标记: $(printf '%s' "$uncovered" | tr '\n' ' ')"

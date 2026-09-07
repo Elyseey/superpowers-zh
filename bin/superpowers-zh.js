@@ -164,6 +164,16 @@ const TARGETS = [
   // 因此若用户已为 Claude Code / Cursor / Codex 装过，Crush 其实已经能读到 ——
   // docs 里写明了别重复装，否则 Crush 会加载两份。
   // 全局：~/.config/crush/skills 是官方 docs 确认的用户级路径。
+  // ZCode（智谱，zcode.z.ai）—— **只支持全局安装**，这是证据决定的，不是偷懒。
+  // 官方文档（zcode.z.ai/docs/skill，中英文版一致）只写了一个路径：
+  //     ZCode Agent 的用户级技能目录：~/.zcode/skills/<skill-name>/SKILL.md
+  // 项目级在文档里是「设置 -> 技能」里的 UI 导入动作（可选「链接到来源目录」或
+  // 「复制成 ZCode 内部副本」），**从不暴露项目级磁盘路径**。issue #120 提供的
+  // 社区补丁写的是 .zcode/skills + .zcode/AGENTS.md —— 那是 AI 按目录结构猜的，
+  // 官方文档里查无此路径。按本仓一贯口径：不确认能生效就不写，避免「装了不生效」。
+  // 因此 dir 为 null：项目级安装会被明确拒绝并指向 --global，而不是装到一个
+  // ZCode 根本不扫的目录里。
+  { name: 'ZCode',         dir: null,                        detect: [],                                global: { dir: '.zcode/skills',          detect: '.zcode' } },
   { name: 'Crush',         dir: '.crush/skills',             detect: ['.crush', 'crush.json', '.crush.json'], global: { dir: '.config/crush/skills', dirWin: 'AppData/Local/crush/skills', detect: '.config/crush' } },
   { name: 'Cline',         dir: '.cline/skills',             detect: '.clinerules' },
   { name: 'Kilo Code',     dir: '.kilocode/skills',          detect: ['.kilocode', '.kilo', 'kilo.jsonc'] },
@@ -1001,6 +1011,8 @@ const TOOL_ALIASES = {
   'huawei':       'CodeArts',
   'cline':        'Cline',
   'crush':        'Crush',
+  'zcode':        'ZCode',
+  'z-code':       'ZCode',
   'kilocode':     'Kilo Code',
   'kilo':         'Kilo Code',
   'kilo-code':    'Kilo Code',
@@ -1303,7 +1315,7 @@ function uninstall(isGlobal) {
     }
   }
 
-  const pool = isGlobal ? GLOBAL_TARGETS : TARGETS;
+  const pool = isGlobal ? GLOBAL_TARGETS : PROJECT_TARGETS;
   let totalSkills = 0;
   for (const target of pool) {
     const removed = uninstallForTarget(target, srcSkillNames, baseDir, isGlobal);
@@ -1360,6 +1372,9 @@ function uninstall(isGlobal) {
 
 // 支持全局安装的工具（有稳定的用户级 skills 目录）
 const GLOBAL_TARGETS = TARGETS.filter(t => t.global);
+// 有些工具只有用户级路径有官方出处（如 ZCode），项目级不猜路径 ——
+// 它们不进项目级安装池，自动检测也不会误装。
+const PROJECT_TARGETS = TARGETS.filter(t => t.dir);
 
 function install(forceToolName, force, isGlobal) {
  try {
@@ -1406,6 +1421,19 @@ function install(forceToolName, force, isGlobal) {
       console.error(`  ❌ 未知工具: ${forceToolName}`);
       process.exit(1);
     }
+    // 镜像的另一半：只有用户级路径有官方出处的工具（如 ZCode），项目级不猜路径。
+    // 明确拒绝并指向 --global，好过装到一个它根本不扫的目录里。
+    if (!isGlobal && !target.dir) {
+      console.log(`
+      ❌ ${target.name} 不支持项目级安装。
+
+        其官方文档只给出用户级技能目录，项目级导入是应用内的 UI 动作、不暴露磁盘路径。
+        猜一个路径装进去只会「装了不生效」，所以这里直接拒绝。
+        请改用全局安装：
+          npx superpowers-zh --global --tool ${shortestAlias(target.name) || target.name.toLowerCase()}
+    `);
+      process.exit(1);
+    }
     if (isGlobal && !target.global) {
       // 部分工具（如 Gemini CLI 的扩展目录）有专属全局方式，但与通用 --global 复制机制不同，
       // 指向对应 docs；其余工具规则为项目级或存于应用内设置，无稳定用户级路径。
@@ -1428,7 +1456,7 @@ function install(forceToolName, force, isGlobal) {
 
   // 自动检测
   let installed = 0;
-  const pool = isGlobal ? GLOBAL_TARGETS : TARGETS;
+  const pool = isGlobal ? GLOBAL_TARGETS : PROJECT_TARGETS;
 
   // 先把所有工具的检测结果一次性算完，再开始装。
   // 边装边判会有顺序依赖：Codex 装到 .agents/skills 会创建 .agents/，紧接着
