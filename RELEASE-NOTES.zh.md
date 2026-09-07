@@ -9,7 +9,7 @@
 ## v1.7.12 (2026-09-07)
 
 **通过 Claude Code 插件市场安装的用户请更新。** 本版修的是一个「装了，但技能之间互相调不动」的问题，
-并新增两款工具支持：**ZCode（智谱）** 与 **DeepSeek Harness**，工具数 23 → 25。
+并新增三款工具支持：**ZCode（智谱）**、**DeepSeek Harness** 与 **Reasonix**，工具数 23 → 26。
 
 ### 🐛 插件模式下跨技能调用全部失败（[#116 之外最实的一条：#124](https://github.com/jnMetaCode/superpowers-zh/issues/124)）
 
@@ -118,6 +118,27 @@ npx superpowers-zh --global --tool dsh      # -> ~/.dsh/skills/ + ~/.dsh/AGENTS.
 装过 Claude Code 的项目引导那半已生效 —— 但 `.claude/skills` 不在 dsh 的技能根列表里，
 技能仍需单独装。
 
+### 🆕 新增 Reasonix 支持（[#42](https://github.com/jnMetaCode/superpowers-zh/issues/42)）
+
+```bash
+npx superpowers-zh                           # 自动检测 .reasonix/ 或 reasonix.toml
+npx superpowers-zh --global --tool reasonix
+```
+
+[Reasonix](https://reasonix.io/)（esengine/DeepSeek-Reasonix）是 DeepSeek 原生的终端 coding
+agent。#42 的 issue 模板整个没填，但产品是真实存在的，官方文档也齐全：
+
+| 内容 | 路径 | 出处 |
+|---|---|---|
+| skills（项目级） | `.reasonix/skills/` | `docs/CONFIG_PATHS.zh-CN.md`：项目本地 settings / skills / commands 位于项目 `.reasonix/` |
+| skills（全局 macOS/Linux） | `~/.reasonix/skills/` | 同上：全局 skills = `<Reasonix home>/skills/` |
+| skills（全局 **Windows**） | `%APPDATA%\reasonix\skills\` | 同上 Reasonix home 表：Windows 为 `%APPDATA%\reasonix`，**与 Unix 不同构** |
+| 引导（项目级） | 项目根 `REASONIX.md` | `docs/GUIDE.zh-CN.md`：常驻指令分层加载 `REASONIX.md` / `AGENTS.md` / `CLAUDE.md` |
+
+Windows 路径走上一版为 Crush 加的 `dirWin` 机制。**全局安装不写引导文件**：官方说
+「用户全局文件先加载」但没写明那个文件的确切路径，不确认就不写 —— 全局仍装 skills，
+只是不自动触发，想要自动触发用项目级安装。
+
 ### 🛡️ 这一版新增 / 修好的门禁
 
 每条都做过反向验证（把问题造回去，必须报错）：
@@ -131,7 +152,7 @@ npx superpowers-zh --global --tool dsh      # -> ~/.dsh/skills/ + ~/.dsh/AGENTS.
 | 全局-only 工具的项目级必须明确拒绝（rc≠0 + 零写入） | 猜一个项目级路径装进去 = 第四次「装了不生效」 |
 | audit 3c-bis 的静默分支改为显式 warn | 上游一发新版，检查条数就悄悄少一条 |
 
-`verify-release` 115 → **149 pass**。
+`verify-release` 115 → **156 pass**。
 
 ### 🌐 官网（不影响安装包）
 

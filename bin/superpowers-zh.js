@@ -173,6 +173,13 @@ const TARGETS = [
   // 官方文档里查无此路径。按本仓一贯口径：不确认能生效就不写，避免「装了不生效」。
   // 因此 dir 为 null：项目级安装会被明确拒绝并指向 --global，而不是装到一个
   // ZCode 根本不扫的目录里。
+  // Reasonix（esengine/DeepSeek-Reasonix，reasonix.io）。路径全部取自官方文档：
+  //   docs/CONFIG_PATHS.zh-CN.md：Reasonix home = macOS/Linux `~/.reasonix`、
+  //     **Windows `%APPDATA%\\reasonix`**；「全局 skills = <Reasonix home>/skills/」
+  //   同文件：项目本地 settings / skills / commands 位于项目 `.reasonix/` 目录
+  //   docs/GUIDE.zh-CN.md：常驻指令来自分层加载的 REASONIX.md / AGENTS.md / CLAUDE.md
+  // Windows 与 Unix 不同构，用 dirWin（与 Crush 同一机制）。
+  { name: 'Reasonix',      dir: '.reasonix/skills',          detect: ['.reasonix', 'reasonix.toml'],    global: { dir: '.reasonix/skills',       dirWin: 'AppData/Roaming/reasonix/skills', detect: '.reasonix' } },
   // DeepSeek Harness（dsh，deepseek-ai/deepseek-harness）—— 路径见 generateDeepSeekHarnessBootstrap 上方注释。
   { name: 'DeepSeek Harness', dir: '.dsh/skills',              detect: ['.dsh', 'dsh.json'],              global: { dir: '.dsh/skills',            detect: '.dsh' } },
   { name: 'ZCode',         dir: null,                        detect: [],                                global: { dir: '.zcode/skills',          detect: '.zcode' } },
@@ -891,6 +898,51 @@ ${skillList}
 
 // CodeBuddy（腾讯 AI IDE）—— 加载机制类似 Claude Code：项目根 CODEBUDDY.md 作 bootstrap，
 // skills 放 .codebuddy/skills/。仅项目级（其用户级 skills 加载路径未证实，暂不做全局）。
+// Reasonix：常驻指令分层加载 REASONIX.md / AGENTS.md / CLAUDE.md（GUIDE 明确），
+// 我们写工具专属的 REASONIX.md，不去动用户的 AGENTS.md / CLAUDE.md。
+// **只在项目级写引导**：官方文档说「用户全局文件先加载」，但没写明那个文件的确切
+// 路径（CONFIG_PATHS 的目录内容表里没有它）。不确认就不写 —— 全局安装仍然装 skills，
+// 只是不自动触发，这一点写在 docs/README.reasonix.md 里。
+function generateReasonixBootstrap(projectDir) {
+  const skillEntries = scanSkillEntries(SKILLS_SRC);
+  const skillList = skillEntries.map(s => `- **${s.name}**: ${s.desc}`).join('\n');
+  const content = `# Superpowers-ZH 中文增强版
+
+本项目已安装 superpowers-zh 技能框架（${skillEntries.length} 个 skills）。
+
+## 核心规则
+
+1. **收到任务时，先检查是否有匹配的 skill** — 哪怕只有 1% 的可能性也要检查
+2. **设计先于编码** — 收到功能需求时，先用 brainstorming skill 做需求分析
+3. **测试先于实现** — 写代码前先写测试（TDD）
+4. **验证先于完成** — 声称完成前必须运行验证命令
+
+## 可用 Skills
+
+Skills 位于 \`.reasonix/skills/\` 目录，每个 skill 有独立的 \`SKILL.md\` 文件。
+
+${skillList}
+
+## 如何使用
+
+当任务匹配某个 skill 时，读取对应的 \`.reasonix/skills/<skill-name>/SKILL.md\` 并严格遵循其流程。
+`;
+
+  const mdPath = resolve(projectDir, 'REASONIX.md');
+  if (existsSync(mdPath)) {
+    const existing = readFileSync(mdPath, 'utf8');
+    if (!existing.includes('superpowers-zh')) {
+      writeFileSync(mdPath, existing.replace(/\s+$/, '') + '\n\n' + wrapWithSentinel(content), 'utf8');
+      console.log(`  ✅ Reasonix: 追加 skills 引用 -> ${mdPath}`);
+    } else {
+      console.log(`  ✅ Reasonix: REASONIX.md 已包含 superpowers-zh 引用`);
+    }
+  } else {
+    writeFileSync(mdPath, wrapWithSentinel(content), 'utf8');
+    console.log(`  ✅ Reasonix: bootstrap -> ${mdPath}`);
+  }
+}
+
 // DeepSeek Harness（dsh）。四条路径全部有一手出处：
 //   skills 项目级  <projectRoot>/.dsh/skills   —— docs/subsystems/skills.md 的
 //                  「Local discovery priority」表 rank 100（rank 200 是 .agents/skills，
@@ -1068,6 +1120,7 @@ const TOOL_ALIASES = {
   'huawei':       'CodeArts',
   'cline':        'Cline',
   'crush':        'Crush',
+  'reasonix':     'Reasonix',
   'dsh':          'DeepSeek Harness',
   'deepseek':     'DeepSeek Harness',
   'deepseek-harness': 'DeepSeek Harness',
@@ -1197,6 +1250,10 @@ function installForTarget(target, baseDir, isGlobal) {
     generateDeepSeekHarnessBootstrap(baseDir, isGlobal);
   }
 
+  if (target.name === 'Reasonix' && !isGlobal) {
+    generateReasonixBootstrap(baseDir);
+  }
+
   if (target.name === 'Kiro') {
     generateKiroSteeringIndex(baseDir);
   }
@@ -1243,6 +1300,8 @@ const BOOTSTRAP_CLEAN_SECTION = [
   'CODEBUDDY.md',
   // DeepSeek Harness 的项目级引导文件（其 instructionFileCandidates 默认含 AGENTS.md）
   'AGENTS.md',
+  // Reasonix 的项目级引导文件（其常驻指令分层加载 REASONIX.md）
+  'REASONIX.md',
 ];
 const BOOTSTRAP_SECTION_MARKERS = [
   '# Superpowers-ZH 中文增强版',
