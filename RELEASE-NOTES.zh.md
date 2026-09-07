@@ -9,7 +9,7 @@
 ## v1.7.12 (2026-09-07)
 
 **通过 Claude Code 插件市场安装的用户请更新。** 本版修的是一个「装了，但技能之间互相调不动」的问题，
-并新增第 24 款工具支持：**ZCode（智谱）**。
+并新增两款工具支持：**ZCode（智谱）** 与 **DeepSeek Harness**，工具数 23 → 25。
 
 ### 🐛 插件模式下跨技能调用全部失败（[#116 之外最实的一条：#124](https://github.com/jnMetaCode/superpowers-zh/issues/124)）
 
@@ -97,6 +97,27 @@ bootstrap，**不会自动触发**，需要显式调用 —— 这个限制写�
 
 工具数 23 → **24**，支持全局安装的工具 11 → **12**。
 
+### 🆕 新增 DeepSeek Harness（dsh）支持（[#122](https://github.com/jnMetaCode/superpowers-zh/issues/122)）
+
+```bash
+npx superpowers-zh                          # 自动检测 .dsh/
+npx superpowers-zh --global --tool dsh      # -> ~/.dsh/skills/ + ~/.dsh/AGENTS.md
+```
+
+与 ZCode 相反，这款**四条路径全部有一手出处**，所以项目级与全局都支持：
+
+| 内容 | 路径 | 出处 |
+|---|---|---|
+| skills（项目级） | `.dsh/skills/` | `docs/subsystems/skills.md` 的 Local discovery priority 表 rank 100 |
+| skills（全局） | `~/.dsh/skills/` | shell-env 文档：`dshHome \| $DSH_HOME, then ~/.dsh` |
+| 引导（项目级） | 项目根 `AGENTS.md` | `instructionFileCandidates` 默认 `['AGENTS.md', 'CLAUDE.md']` |
+| 引导（全局） | `~/.dsh/AGENTS.md` | user-global 指令文件为 `$DSH_HOME/AGENTS.md` |
+
+**装过 Antigravity 或 Codex 的项目其实已经被覆盖一半**：dsh 的技能发现 rank 200 是
+`.agents/skills`，正是那两款用的目录。文档里写明了别重复装。同理 dsh 也读 `CLAUDE.md`，
+装过 Claude Code 的项目引导那半已生效 —— 但 `.claude/skills` 不在 dsh 的技能根列表里，
+技能仍需单独装。
+
 ### 🛡️ 这一版新增 / 修好的门禁
 
 每条都做过反向验证（把问题造回去，必须报错）：
@@ -110,7 +131,7 @@ bootstrap，**不会自动触发**，需要显式调用 —— 这个限制写�
 | 全局-only 工具的项目级必须明确拒绝（rc≠0 + 零写入） | 猜一个项目级路径装进去 = 第四次「装了不生效」 |
 | audit 3c-bis 的静默分支改为显式 warn | 上游一发新版，检查条数就悄悄少一条 |
 
-`verify-release` 115 → **144 pass**。
+`verify-release` 115 → **149 pass**。
 
 ### 🌐 官网（不影响安装包）
 

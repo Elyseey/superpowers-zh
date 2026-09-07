@@ -173,6 +173,8 @@ const TARGETS = [
   // 官方文档里查无此路径。按本仓一贯口径：不确认能生效就不写，避免「装了不生效」。
   // 因此 dir 为 null：项目级安装会被明确拒绝并指向 --global，而不是装到一个
   // ZCode 根本不扫的目录里。
+  // DeepSeek Harness（dsh，deepseek-ai/deepseek-harness）—— 路径见 generateDeepSeekHarnessBootstrap 上方注释。
+  { name: 'DeepSeek Harness', dir: '.dsh/skills',              detect: ['.dsh', 'dsh.json'],              global: { dir: '.dsh/skills',            detect: '.dsh' } },
   { name: 'ZCode',         dir: null,                        detect: [],                                global: { dir: '.zcode/skills',          detect: '.zcode' } },
   { name: 'Crush',         dir: '.crush/skills',             detect: ['.crush', 'crush.json', '.crush.json'], global: { dir: '.config/crush/skills', dirWin: 'AppData/Local/crush/skills', detect: '.config/crush' } },
   { name: 'Cline',         dir: '.cline/skills',             detect: '.clinerules' },
@@ -889,6 +891,61 @@ ${skillList}
 
 // CodeBuddy（腾讯 AI IDE）—— 加载机制类似 Claude Code：项目根 CODEBUDDY.md 作 bootstrap，
 // skills 放 .codebuddy/skills/。仅项目级（其用户级 skills 加载路径未证实，暂不做全局）。
+// DeepSeek Harness（dsh）。四条路径全部有一手出处：
+//   skills 项目级  <projectRoot>/.dsh/skills   —— docs/subsystems/skills.md 的
+//                  「Local discovery priority」表 rank 100（rank 200 是 .agents/skills，
+//                  与 Antigravity 共用，装过它的项目其实已经能被 dsh 读到）
+//   skills 全局    <dshHome>/skills，dshHome 默认 ~/.dsh
+//                  —— packages/shell/shell-env README：`dshHome | $DSH_HOME, then ~/.dsh`
+//   指令文件       AGENTS.md / CLAUDE.md（instructionFileCandidates 默认值）
+//   全局指令文件   $DSH_HOME/AGENTS.md 即 ~/.dsh/AGENTS.md
+// 注意 dsh 也读 CLAUDE.md：装过 Claude Code 的项目，指令文件那半已经生效，
+// 但 .claude/skills **不在** dsh 的 skill 根列表里，技能仍需单独装。
+function generateDeepSeekHarnessBootstrap(baseDir, isGlobal) {
+  const skillEntries = scanSkillEntries(SKILLS_SRC);
+  const skillList = skillEntries.map(s => `- **${s.name}**: ${s.desc}`).join('\n');
+  const scope = isGlobal ? '已全局安装 superpowers-zh 技能框架，所有项目共享' : '本项目已安装 superpowers-zh 技能框架';
+  const skillsRef = isGlobal ? '~/.dsh/skills/' : '.dsh/skills/';
+
+  const content = `# Superpowers-ZH 中文增强版
+
+${scope}（${skillEntries.length} 个 skills）。
+
+## 核心规则
+
+1. **收到任务时，先检查是否有匹配的 skill** — 哪怕只有 1% 的可能性也要检查
+2. **设计先于编码** — 收到功能需求时，先用 brainstorming skill 做需求分析
+3. **测试先于实现** — 写代码前先写测试（TDD）
+4. **验证先于完成** — 声称完成前必须运行验证命令
+
+## 可用 Skills
+
+Skills 位于 \`${skillsRef}\` 目录，每个 skill 有独立的 \`SKILL.md\` 文件。
+
+${skillList}
+
+## 如何使用
+
+当任务匹配某个 skill 时，读取对应的 \`${skillsRef}<skill-name>/SKILL.md\` 并严格遵循其流程。
+`;
+
+  // 全局指令文件 ~/.dsh/AGENTS.md；项目级放项目根 AGENTS.md（两者都是官方默认候选）
+  const mdPath = isGlobal ? resolve(baseDir, '.dsh', 'AGENTS.md') : resolve(baseDir, 'AGENTS.md');
+  mkdirSync(dirname(mdPath), { recursive: true });
+  if (existsSync(mdPath)) {
+    const existing = readFileSync(mdPath, 'utf8');
+    if (!existing.includes('superpowers-zh')) {
+      writeFileSync(mdPath, existing.replace(/\s+$/, '') + '\n\n' + wrapWithSentinel(content), 'utf8');
+      console.log(`  ✅ DeepSeek Harness: 追加 skills 引用 -> ${mdPath}`);
+    } else {
+      console.log(`  ✅ DeepSeek Harness: AGENTS.md 已包含 superpowers-zh 引用`);
+    }
+  } else {
+    writeFileSync(mdPath, wrapWithSentinel(content), 'utf8');
+    console.log(`  ✅ DeepSeek Harness: bootstrap -> ${mdPath}`);
+  }
+}
+
 function generateCodeBuddyBootstrap(baseDir, isGlobal) {
   const skillEntries = scanSkillEntries(SKILLS_SRC);
   const skillList = skillEntries.map(s => `- **${s.name}**: ${s.desc}`).join('\n');
@@ -1011,6 +1068,9 @@ const TOOL_ALIASES = {
   'huawei':       'CodeArts',
   'cline':        'Cline',
   'crush':        'Crush',
+  'dsh':          'DeepSeek Harness',
+  'deepseek':     'DeepSeek Harness',
+  'deepseek-harness': 'DeepSeek Harness',
   'zcode':        'ZCode',
   'z-code':       'ZCode',
   'kilocode':     'Kilo Code',
@@ -1133,6 +1193,10 @@ function installForTarget(target, baseDir, isGlobal) {
     generateCodeBuddyBootstrap(baseDir, isGlobal);
   }
 
+  if (target.name === 'DeepSeek Harness') {
+    generateDeepSeekHarnessBootstrap(baseDir, isGlobal);
+  }
+
   if (target.name === 'Kiro') {
     generateKiroSteeringIndex(baseDir);
   }
@@ -1177,6 +1241,8 @@ const BOOTSTRAP_CLEAN_SECTION = [
   'HERMES.md',
   'CONVENTIONS.md',
   'CODEBUDDY.md',
+  // DeepSeek Harness 的项目级引导文件（其 instructionFileCandidates 默认含 AGENTS.md）
+  'AGENTS.md',
 ];
 const BOOTSTRAP_SECTION_MARKERS = [
   '# Superpowers-ZH 中文增强版',
@@ -1259,7 +1325,7 @@ function cleanBootstrapSection(filePath) {
 const GLOBAL_BOOTSTRAP_DELETE = ['.qoder/rules/superpowers-zh.md'];
 // qwen 在 GLOBAL_OK 里，--global 会写 ~/.qwen/QWEN.md，全局卸载必须清掉它，
 // 否则 --global 装卸一轮会在用户主目录留残留。
-const GLOBAL_BOOTSTRAP_CLEAN_SECTION = ['.claude/CLAUDE.md', '.qwen/QWEN.md', '.codebuddy/CODEBUDDY.md'];
+const GLOBAL_BOOTSTRAP_CLEAN_SECTION = ['.claude/CLAUDE.md', '.qwen/QWEN.md', '.codebuddy/CODEBUDDY.md', '.dsh/AGENTS.md'];
 
 function uninstallForTarget(target, srcSkillNames, baseDir, isGlobal) {
   const relDir = isGlobal ? globalRelDir(target) : target.dir;

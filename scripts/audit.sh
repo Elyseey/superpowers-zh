@@ -114,7 +114,7 @@ if [ "$QUICK" != "1" ]; then
 hdr "Category 2: Installer 功能测试（23 款工具）"
 #==============================================================================
 
-declare -a TOOLS=(claude cursor codex kiro deerflow trae antigravity vscode openclaw windsurf gemini aider opencode qwen hermes claw copilot qoder codebuddy codearts cline kilocode crush zcode)
+declare -a TOOLS=(claude cursor codex kiro deerflow trae antigravity vscode openclaw windsurf gemini aider opencode qwen hermes claw copilot qoder codebuddy codearts cline kilocode crush zcode dsh)
 
 # 只有用户级路径有官方出处的工具（项目级路径官方未公开，我们不猜）——
 # 对它们，项目级安装**必须被明确拒绝**，而不是装到一个猜出来的目录里。

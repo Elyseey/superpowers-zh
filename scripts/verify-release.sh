@@ -37,7 +37,7 @@ declare -a SPEC=(
   "claw:.claw/skills"              "copilot:.claude/skills"       "qoder:.qoder/skills"
   "codebuddy:.codebuddy/skills"    "codearts:.codeartsdoer/skills"
   "cline:.cline/skills"            "kilocode:.kilocode/skills"
-  "crush:.crush/skills"
+  "crush:.crush/skills"          "dsh:.dsh/skills"
 )
 
 echo "═══ 期望每款装入 $EXPECT_SKILLS 个 skill ═══"
@@ -89,7 +89,7 @@ declare -a DETECT=(
   ".opencode:OpenCode"       ".qwen:Qwen Code"       ".hermes:Hermes Agent"
   ".claw:Claw Code"          ".qoder:Qoder"          ".codebuddy:CodeBuddy"
   ".codeartsdoer:CodeArts"   ".clinerules:Cline"     ".kilocode:Kilo Code"
-  ".kilo:Kilo Code"          ".crush:Crush"
+  ".kilo:Kilo Code"          ".crush:Crush"   ".dsh:DeepSeek Harness"
   # DeerFlow 2.0 顶层没有 deer_flow 目录（backend/frontend/skills/…），只测它等于
   # 拿代码测代码。skills/public 是 skills 机制本身、随仓库版本控制，才是真实标记。
   "skills/public:DeerFlow"   "deer_flow:DeerFlow"
@@ -116,7 +116,7 @@ done
 
 echo ""
 echo "─── C. --global：11 款应成功（落盘位置 / 卸载零残留 / 不误删用户文件），其余应明确拒绝 ───"
-declare -a GLOBAL_OK=(claude codex openclaw windsurf opencode qwen qoder crush hermes codebuddy codearts zcode)
+declare -a GLOBAL_OK=(claude codex openclaw windsurf opencode qwen qoder crush hermes codebuddy codearts zcode dsh)
 declare -a GLOBAL_NO=(cursor kiro trae aider deerflow vscode claw gemini antigravity cline kilocode)
 # 全局落盘位置断言。原来这里只看退出码 —— 而 Windsurf 的 --global 曾装到
 # ~/.windsurf/skills，官方实际读 ~/.codeium/windsurf/skills，退出码照样是 0。
@@ -128,6 +128,7 @@ declare -a GLOBAL_DIR=(
   "hermes:.hermes/skills"        "codebuddy:.codebuddy/skills"
   "codearts:.codeartsdoer/skills"
   "zcode:.zcode/skills"
+  "dsh:.dsh/skills"
 )
 # 卸载有两个反方向的坑，两个都得测，而且此前**只测了 qwen 一款**：
 #   ① 卸不干净 —— 残留留在用户主目录里，看不见、跨项目污染
