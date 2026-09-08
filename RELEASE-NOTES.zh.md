@@ -64,6 +64,37 @@ Windows 走 `%LOCALAPPDATA%\crush\skills\`（它给 Windows 用户的上手命�
 实测（`--no-experimental-detect-command` 模拟 Node 20）：上游版报
 `To load an ES module, set "type": "module"` + SyntaxError，我们改后版本正常执行。
 
+### 🔄 对齐上游 v6.3.0：13 个镜像文件、+415 / -44 行正文
+
+旧门禁对已翻译的文件只比「标题数」—— 标题不变，正文改多少行都看不见。上游 v6.3.0
+给 skill 正文加了 415 行，我们这边一声不吭。这一版补了基线文件
+`.upstream-sync.json` 之后，第一次量出了这个缺口，并分四批补完：
+
+| 文件 | 上游改动 | 这次同步了什么 |
+|---|---|---|
+| `brainstorming/SKILL.md` | +108 / -9 | 重译到 v6.3.0：Three Paths 结构、危险信号表、每条路径各自的检查清单 |
+| `using-superpowers/references/codex-tools.md` | +70 / -1 | 我们原来只有 2 节 25 行，上游是 5 节；顺带修掉 `close_agent` 在 V1/V2 里的错误行 |
+| `using-superpowers/references/hermes-tools.md` | +56 | 换成上游的 6 节版本，只保留一条声明过的 fork 注记 |
+| `finishing-a-development-branch/SKILL.md` | +24 | 工作树删除被拒时的处理：绝不自作主张 `--force` |
+| `implementer-prompt.md` / `re-review-prompt.md` / `code-reviewer.md` | +30 | 三份子智能体提示词统一加上「**你不派发子智能体**」契约 |
+| `subagent-driven-development/SKILL.md` | +89 / -24 | 控制者从「遇事问人」改成「**自行裁决 + 记账**」（见下） |
+| `task-reviewer-prompt.md` | +22 | 审查者不派子智能体；证据读不到 ≠ 证据不存在；打包分派要逐文件对 diff |
+| `writing-plans/SKILL.md` / `using-superpowers/SKILL.md` / `visual-companion.md` | +9 / -4 | 计划模板新增 Spec 字段；Hermes 工具参考入口；Copilot CLI 后台启动说明 |
+
+其中 SDD 那条是行为塑造上最实的一处改动。旧版本里，控制者一遇到「审查发现」与
+「计划原文」冲突就停下来问人类伙伴；v6.3.0 改成由控制者自己裁决，每条裁决以
+`Ruling: <决定> — <为什么> — <错了的代价>` 记进账本，收尾时汇总成「我作出的裁决」
+交回来。只留四类硬停止：不可逆或破坏性操作、涉及安全的动作、工作树之外按惯例
+该先问一声的副作用（合并 / 推送共享分支 / 发布）、以及坏到每条路都只能靠猜的计划。
+理由是上游写在正文里的一句话：**一个错误的裁决，代价是看得见也撤得掉的返工；
+一个停在问题上的会话，代价是一整天，而且什么也换不来。**
+
+配套的流程图节点也跟着改了（「询问人类伙伴以哪个为准」→「对冲突作出裁决，把裁决
+记进账本」），预检扫描的产出从一句结论改成一张必须逐行填的表。
+
+**唯一有意不同步的是 `writing-skills/render-graphs.js` 的 CJS → ESM**，理由见上一节。
+这条分歧写进了 `.upstream-sync.json` 的 evidence 字段，免得下次同步时被当成遗漏又"修"一遍。
+
 ### 🆕 新增 ZCode（智谱）支持 —— 只做全局，因为项目级路径官方从未公开（[#95](https://github.com/jnMetaCode/superpowers-zh/issues/95) [#120](https://github.com/jnMetaCode/superpowers-zh/issues/120)）
 
 ```bash
@@ -183,7 +214,7 @@ Unix（`/`、`/usr`、`/etc`、`/bin`、`/sbin`、`/var`、`/opt`、`/System`、
 | 系统目录护栏（Unix + win32 打桩双向验证） | 管理员终端默认 cwd 就是 System32（#125） |
 | audit 3c-bis 的静默分支改为显式 warn | 上游一发新版，检查条数就悄悄少一条 |
 
-`verify-release` 115 → **160 pass**。
+`verify-release` 115 → **163 pass**，`audit` 162 pass / 0 warn。
 
 ### 🌐 官网（不影响安装包）
 
