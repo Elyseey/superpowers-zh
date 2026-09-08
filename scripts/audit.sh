@@ -362,7 +362,13 @@ hdr "Category 5: 工具计数一致性"
 # site/build.mjs、3 份 plugin manifest 十几处。这一类检查专门堵这个。
 
 TARGET_COUNT=$(sed -n '/^const TARGETS = \[/,/^\];/p' "$INSTALLER" | grep -cE "^  \{ name: '")
+# 镜像的另一半例外：标了 editionOf 的条目是「某款工具的另一个发行版」（如 TRAE CN
+# 之于 Trae），它只是为了承载该发行版独有的磁盘路径才单独成条，**不是一款新工具**。
+# 计进去会让文案宣称的款数灌水，站点工具墙也会出现两张同名卡片。
+EDITION_COUNT=$(sed -n '/^const TARGETS = \[/,/^\];/p' "$INSTALLER" | grep -cE "^  \{ name: '[^']+'.*editionOf:" || true)
+TARGET_COUNT=$((TARGET_COUNT - EDITION_COUNT))
 EXPECTED_TOOLS=$((TARGET_COUNT + 1))
+[ "$EDITION_COUNT" -gt 0 ] && echo "  （其中 $EDITION_COUNT 条是发行版变体，不计入产品数）"
 echo "  installer TARGETS = $TARGET_COUNT 个安装目标  ->  文案应宣称 $EXPECTED_TOOLS 款"
 
 # check_count <文件> <正则> <说明>：正则匹配到的所有数字都必须等于 EXPECTED_TOOLS
