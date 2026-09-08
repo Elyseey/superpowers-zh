@@ -450,6 +450,53 @@ if [ "$tools_tested" = "$EXPECTED_TOOLS" ]; then ok; else
 fi
 
 #==============================================================================
+# 6. dot 流程图：边引用的节点必须先声明
+#==============================================================================
+# 为什么要卡：graphviz 遇到「边引用了未声明的节点」不报错，只会自动新建一个
+# 光秃秃的框。改节点文案时漏改某条边，渲染出来就是一张多了个孤儿节点、且原
+# 分支断掉的图 —— 肉眼看图才发现，代码层面一点动静都没有。
+# 同步上游 v6.3.0 时改了 subagent-driven-development 的两个节点名，正是这个
+# 场景，当时靠手写脚本才验出来，之后就没人再验了。
+hdr "dot 流程图节点/边一致性"
+
+DOT_OUT=$(python3 - "$ROOT" <<'PYEOF'
+import re, glob, os, sys
+root = sys.argv[1]
+problems = 0
+total = 0
+for f in sorted(glob.glob(os.path.join(root, 'skills', '**', '*.md'), recursive=True)):
+    src = open(f, encoding='utf-8').read()
+    for block in re.findall(r'```dot\n(.*?)```', src, re.S):
+        total += 1
+        declared, used = set(), set()
+        for ln in block.split('\n'):
+            if '->' in ln:
+                # 边行：只取箭头部分的节点，忽略行尾 [label=...]
+                for m in re.finditer(r'"([^"]+)"', ln.split('[')[0]):
+                    used.add(m.group(1))
+            else:
+                m = re.match(r'\s*"([^"]+)"\s*\[', ln)
+                if m:
+                    declared.add(m.group(1))
+        orphan = used - declared
+        if orphan:
+            problems += 1
+            rel = os.path.relpath(f, root)
+            print('BAD\t%s\t%s' % (rel, ', '.join(sorted(orphan))))
+print('TOTAL\t%d\t%d' % (total, problems))
+PYEOF
+)
+DOT_TOTAL=$(echo "$DOT_OUT" | awk -F'\t' '$1=="TOTAL"{print $2}')
+DOT_BAD=$(echo "$DOT_OUT"   | awk -F'\t' '$1=="TOTAL"{print $3}')
+if [ "${DOT_BAD:-1}" = "0" ]; then
+  ok
+  echo "  ✅ $DOT_TOTAL 个 dot 图，边引用的节点全部已声明"
+else
+  echo "$DOT_OUT" | awk -F'\t' '$1=="BAD"{print $2": 边引用了未声明的节点 -> "$3}' | while read -r l; do echo "  ❌ $l"; done
+  bad "dot 图有 $DOT_BAD 处「边引用了未声明的节点」——改节点文案时漏改了边，渲染会多出孤儿节点"
+fi
+
+#==============================================================================
 echo ""
 echo "=========================================="
 echo "📊 审计结果"
