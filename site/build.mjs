@@ -1442,15 +1442,24 @@ function build() {
   // 严格 CSP：脚本仅允许 'self' + 本站内联脚本的 hash（含 GA 内联配置块，自动收集）；
   // 样式仅 'self'；禁用插件/内联事件；锁死 base-uri 与 frame 祖先。
   // Google Analytics (gtag) 需放行 googletagmanager（加载器）与 analytics（上报）域名。
+  // Cloudflare Web Analytics 的 beacon 是 **Cloudflare 在边缘注入的**，不是我们写进
+  // 页面的 —— 所以它照样受本站 CSP 约束。此前 script-src 没放行它，浏览器直接拒绝
+  // 执行，统计一条数据都收不到：面板开着，实际全黑。
+  //   加载器 https://static.cloudflareinsights.com/beacon.min.js
+  //   上报   https://cloudflareinsights.com/cdn-cgi/rum （POST / sendBeacon）
+  // 为什么要救它而不是关掉它：本站主力受众在国内，而 GA 的 google-analytics.com
+  // 在国内不可达 —— 只留 GA 等于对主要用户群没有任何数据。两个都留，互为兜底。
+  const CF_SCRIPT = 'https://static.cloudflareinsights.com';
+  const CF_CONNECT = 'https://cloudflareinsights.com';
   const GA_SCRIPT = 'https://www.googletagmanager.com';
   const GA_CONNECT = 'https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com';
   const csp = [
     "default-src 'self'",
-    "script-src 'self' " + GA_SCRIPT + ' ' + [...scriptHashes].join(' '),
+    "script-src 'self' " + GA_SCRIPT + ' ' + CF_SCRIPT + ' ' + [...scriptHashes].join(' '),
     "style-src 'self'",
     "img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com",
     "font-src 'self'",
-    "connect-src 'self' " + GA_CONNECT,
+    "connect-src 'self' " + GA_CONNECT + ' ' + CF_CONNECT,
     "object-src 'none'",
     "base-uri 'self'",
     "frame-ancestors 'none'",
