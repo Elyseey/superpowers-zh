@@ -273,7 +273,7 @@ claude plugin update superpowers-zh@superpowers-zh       # 再升級 plugin（�
 claude plugin uninstall superpowers-zh@superpowers-zh    # 卸載
 ```
 
-> **和方式一怎麼選？** marketplace 裝的是**完整 plugin**（skills + hooks + bootstrap 由 Claude Code 統一託管、隨版本更新），但只服務 Claude Code 一款工具。要裝給其餘 19 款工具，仍然用方式一的 `npx superpowers-zh`。兩者可以共存，但同一個專案裡別重複裝 Claude Code，否則 skills 會出現兩份。
+> **和方式一怎麼選？** marketplace 裝的是**完整 plugin**（skills + hooks + bootstrap 由 Claude Code 統一託管、隨版本更新），但只服務 Claude Code 一款工具。要裝給其餘 25 款工具，仍然用方式一的 `npx superpowers-zh`。兩者可以共存，但同一個專案裡別重複裝 Claude Code，否則 skills 會出現兩份。
 
 ### 方式三：手動安裝（low-fidelity，僅作備選）
 
