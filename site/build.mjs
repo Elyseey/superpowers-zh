@@ -356,6 +356,34 @@ const SPONSORS = [
     },
     perkShort: { zh: '注册即免费领 2500 万 Token', en: '25M free tokens on sign-up', zht: '註冊即免費領 2500 萬 Token' },
   },
+  {
+    tier: 'standard',
+    code: '',
+    logo: 'logo-fluxionai-icon.png',
+    url: 'https://fluxionai.space/register?source=github&campaign=superpowers&promo=SUPERPOWERS',
+    name: { zh: 'Fluxion AI', en: 'Fluxion AI', zht: 'Fluxion AI' },
+    tagline: {
+      zh: '一个入口，接入并管理全球主流 AI 模型',
+      en: 'One entry point to access and manage the world’s mainstream AI models',
+      zht: '一個入口，接入並管理全球主流 AI 模型',
+    },
+    alt: {
+      zh: 'Fluxion AI —— 一个入口，接入并管理全球主流 AI 模型',
+      en: 'Fluxion AI — one entry point to access and manage the world’s mainstream AI models',
+      zht: 'Fluxion AI —— 一個入口，接入並管理全球主流 AI 模型',
+    },
+    desc: {
+      zh: '面向个人开发者、技术团队与企业，通过统一 API 接入并管理全球主流 AI 模型；通过多线路动态调度提升可用性，模型表现、响应时间与费用透明可查。根据不同模型与线路，API 调用成本较官方或基准价格可降低 40%—98%。',
+      en: 'For individual developers, engineering teams and enterprises: access and manage the world’s mainstream AI models through one unified API. Multi-route dynamic scheduling improves availability, with transparent model performance, latency and cost. Depending on the model and route, API costs can be 40%–98% lower than official or benchmark pricing.',
+      zht: '面向個人開發者、技術團隊與企業，透過統一 API 接入並管理全球主流 AI 模型；透過多線路動態調度提升可用性，模型表現、回應時間與費用透明可查。依不同模型與線路，API 呼叫成本較官方或基準價格可降低 40%—98%。',
+    },
+    perk: {
+      zh: '🎁 通过本页链接注册即可获得 $3 API 额度',
+      en: '🎁 Sign up via this link to get $3 in API credit',
+      zht: '🎁 透過本頁連結註冊即可獲得 $3 API 額度',
+    },
+    perkShort: { zh: '注册即得 $3 API 额度', en: '$3 API credit on sign-up', zht: '註冊即得 $3 API 額度' },
+  },
 ];
 
 // 赞助位是付费展示位，图挂了就是事故。旗舰卡读 img、常规卡读 logo，两条路径
